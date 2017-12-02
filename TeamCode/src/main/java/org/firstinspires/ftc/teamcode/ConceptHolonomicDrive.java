@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 
@@ -37,6 +38,18 @@ public class ConceptHolonomicDrive extends OpMode {
     DcMotor motorFrontLeft;
     DcMotor motorBackRight;
     DcMotor motorBackLeft;
+
+    // Up and down movement of glyph mechanism
+    DcMotor pulley;
+
+    final double LEFT_OUT_POSITION = 0.75;
+    final double LEFT_IN_POSITION = 0.30;
+    final double RIGHT_OUT_POSITION =  0;
+    final double RIGHT_IN_POSITION = 0;
+
+    Servo flipper_left;
+    Servo flipper_right;
+
 
     /**
      * Constructor
@@ -88,6 +101,14 @@ public class ConceptHolonomicDrive extends OpMode {
         motorBackRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
+        pulley = hardwareMap.dcMotor.get("pulley");
+
+        flipper_left = hardwareMap.servo.get("arm left");
+        flipper_right = hardwareMap.servo.get("arm right");
+        flipper_left.setDirection(Servo.Direction.REVERSE);
+
+        flipper_left.setPosition(LEFT_OUT_POSITION);
+        flipper_right.setPosition(RIGHT_OUT_POSITION);
 
     }
 
@@ -113,6 +134,10 @@ public class ConceptHolonomicDrive extends OpMode {
         float gamepad1LeftX = gamepad1.left_stick_x;
         float gamepad1RightX = gamepad1.right_stick_x;
 
+        boolean gamepad2Up = gamepad1.dpad_up;
+        boolean gamepad2Down = gamepad1.dpad_down;
+
+
         // holonomic formulas
 
         float FrontLeft = -gamepad1LeftY - gamepad1LeftX - gamepad1RightX;
@@ -126,6 +151,12 @@ public class ConceptHolonomicDrive extends OpMode {
         BackLeft = Range.clip(BackLeft, -1, 1);
         BackRight = Range.clip(BackRight, -1, 1);
 
+        motorFrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorBackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorBackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+
         // write the values to the motors
         motorFrontRight.setPower(FrontRight);
         motorFrontLeft.setPower(FrontLeft);
@@ -133,10 +164,34 @@ public class ConceptHolonomicDrive extends OpMode {
         motorBackRight.setPower(BackRight);
 
 
+        //
+        if(gamepad2Up) {
+            pulley.setPower(1.0);
+        }
+        else if(gamepad2Down) {
+            pulley.setPower(-1.0);
+        }
+        else {
+            pulley.setPower(0.0);
+        }
+
+
+
+
+        if(gamepad1.left_bumper) {
+            flipper_left.setPosition(LEFT_IN_POSITION);
+            flipper_right.setPosition(RIGHT_IN_POSITION);
+        }
+        else {
+            flipper_left.setPosition(LEFT_OUT_POSITION);
+            flipper_right.setPosition(RIGHT_OUT_POSITION);
+        }
+
+
 		/*
 		 * Telemetry for debugging
 		 */
-        telemetry.addData("Text", "*** Oct-28-2017 -v1-Robot Data***");
+        telemetry.addData("Text", "*** Oct-30-2017 -v1-Robot Data***");
         telemetry.addData("Joy XL YL XR",  String.format("%.2f", gamepad1LeftX) + " " +
                 String.format("%.2f", gamepad1LeftY) + " " +  String.format("%.2f", gamepad1RightX));
 
@@ -144,6 +199,11 @@ public class ConceptHolonomicDrive extends OpMode {
         telemetry.addData("f right pwr", "front right pwr: " + String.format("%.2f", FrontRight));
         telemetry.addData("b right pwr", "back right pwr: " + String.format("%.2f", BackRight));
         telemetry.addData("b left pwr", "back left pwr: " + String.format("%.2f", BackLeft));
+
+        telemetry.addData("Encoder FR Position", String.format("%8d", motorFrontRight.getCurrentPosition()));
+        telemetry.addData("Encoder FL Position", String.format("%8d", motorFrontLeft.getCurrentPosition()));
+        telemetry.addData("Encoder BR Position", String.format("%8d", motorBackRight.getCurrentPosition()));
+        telemetry.addData("Encoder BL Position", String.format("%8d", motorBackLeft.getCurrentPosition()));
 
     }
 
