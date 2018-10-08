@@ -124,7 +124,7 @@ public class ConceptHolonomicDrive extends OpMode {
 //        float gamepad1RightX = gamepad1.right_stick_x;
 //
 //        // holonomic formulas
-//
+
 //        float FrontLeft = -gamepad1LeftY - gamepad1LeftX - gamepad1RightX;
 //        float FrontRight = gamepad1LeftY - gamepad1LeftX - gamepad1RightX;
 //        float BackRight = gamepad1LeftY + gamepad1LeftX - gamepad1RightX;
